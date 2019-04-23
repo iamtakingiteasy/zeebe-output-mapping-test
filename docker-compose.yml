@@ -1,0 +1,56 @@
+version: '3.5'
+services:
+  zeebe:
+    image: "camunda/zeebe:0.17.0"
+    volumes:
+      - data:/root
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        until [ -e ~/exporter-ready ]; do
+          sleep 1;
+        done
+        wget -c https://github.com/zeebe-io/zeebe-simple-monitor/releases/download/0.13.0/zeebe-simple-monitor-exporter-0.13.0.jar -O ~/zeebe-simple-monitor-exporter.jar
+        wget -c https://github.com/zeebe-io/zeebe-hazelcast-exporter/releases/download/0.2.0/zeebe-hazelcast-exporter-0.2.0.jar -O ~/zeebe-hazelcast-exporter.jar
+        cp ~/*-exporter.jar /usr/local/zeebe/lib/
+        cat <<EOF >> /usr/local/zeebe/conf/zeebe.cfg.toml
+        [[exporters]]
+        id = "simple-monitor"
+        className = "io.zeebe.monitor.SimpleMonitorExporter"
+        [[exporters]]
+        id = "hazelcast"
+        className = "io.zeebe.hazelcast.exporter.HazelcastExporter"
+        EOF
+        cat /usr/local/zeebe/conf/zeebe.cfg.toml
+        exec /usr/local/bin/startup.sh
+  exporter:
+    image: "camunda/zeebe-simple-monitor:0.13.0"
+    volumes:
+      - data:/root
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        rm -f ~/zeebe-monitor*
+        touch ~/exporter-ready
+        until [ -e ~/zeebe-monitor.lock.db ]; do
+          sleep 1;
+        done
+        rm -f ~/exporter-ready
+        exec java -jar /usr/local/zeebe-simple-monitor.jar
+  tester:
+    image: "golang:alpine"
+    volumes:
+      - data:/root
+    entrypoint:
+      - "sh"
+      - "-c"
+      - |
+        until [ -e ~/zeebe-monitor.lock.db ]; do
+          sleep 1;
+        done
+        go get -v github.com/iamtakingiteasy/zeebe-output-mapping-test
+        ZEEBE_URL=zeebe:26500 zeebe-output-mapping-test
+volumes:
+  data:

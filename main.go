@@ -31,15 +31,16 @@ func init() {
 }
 
 func startProcess(id string) {
+	log.Println("running", id)
 	cmd, err := zbclient.NewCreateInstanceCommand().BPMNProcessId("test-process").LatestVersion().VariablesFromMap(map[string]interface{}{
 		"id": id,
 	})
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	_, err = cmd.Send()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -93,9 +94,7 @@ func main() {
 	prop.Open()
 
 	go func() {
-		log.Println("running abc")
 		startProcess("abc")
-		log.Println("running 123")
 		startProcess("123")
 	}()
 	<-exiter

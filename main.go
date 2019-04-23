@@ -76,7 +76,7 @@ func main() {
 		if id == "123" {
 			payload = `{"account":{"id":"123","test1":"","test2":"success"}, "foo": {"unmapped_values_do_not_affect":""}}`
 		} else {
-			payload = `{"account":{"id":"123","test1":"","test2":""}}`
+			payload = `{"account":{"id":"123","test1":"test2 value causing incident","test2":""}}`
 		}
         log.Printf("worker return: %v\n", payload)
 		cmd, err := client.NewCompleteJobCommand().JobKey(job.GetKey()).VariablesFromString(payload)

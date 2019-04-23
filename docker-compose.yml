@@ -28,6 +28,8 @@ services:
     image: "camunda/zeebe-simple-monitor:0.13.0"
     volumes:
       - data:/root
+    ports:
+      - "38080:8080"
     entrypoint:
       - "sh"
       - "-c"
@@ -47,6 +49,7 @@ services:
       - "sh"
       - "-c"
       - |
+        apk --no-cache add git
         until [ -e ~/zeebe-monitor.lock.db ]; do
           sleep 1;
         done

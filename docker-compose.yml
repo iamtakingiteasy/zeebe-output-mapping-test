@@ -50,10 +50,10 @@ services:
       - "-c"
       - |
         apk --no-cache add git
+        go get -v github.com/iamtakingiteasy/zeebe-output-mapping-test
         until [ -e ~/zeebe-monitor.lock.db ]; do
           sleep 1;
         done
-        go get -v github.com/iamtakingiteasy/zeebe-output-mapping-test
         ZEEBE_URL=zeebe:26500 zeebe-output-mapping-test
 volumes:
   data:

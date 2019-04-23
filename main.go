@@ -10,7 +10,7 @@ import (
 	"github.com/zeebe-io/zeebe/clients/go/zbc"
 	"log"
 	"os"
-    "sync/atomic"
+	"sync/atomic"
 )
 
 var zbclient zbc.ZBClient
@@ -53,21 +53,21 @@ func main() {
 		log.Fatalln(err)
 	}
 
-    var counter int32
-    exiter := make(chan int)
+	var counter int32
+	exiter := make(chan int)
 
 	prop := zbclient.NewJobWorker().JobType("test-service").Handler(func(client worker.JobClient, job entities.Job) {
-        defer func() {
-            if atomic.AddInt32(&counter, 1) == 2 {
-                log.Println("Done, exiting")
-                close(exiter)
-            }
-        }()
+		defer func() {
+			if atomic.AddInt32(&counter, 1) == 2 {
+				log.Println("Done, exiting")
+				close(exiter)
+			}
+		}()
 		vars, err := job.GetVariablesAsMap()
 		if err != nil {
 			log.Fatalln(err)
 		}
-        log.Printf("worker got: %v\n", vars)
+		log.Printf("worker got: %v\n", vars)
 		var id string
 		if v, ok := vars["id"].(string); ok {
 			id = v
@@ -78,7 +78,7 @@ func main() {
 		} else {
 			payload = `{"account":{"id":"123","test1":"test2 value causing incident","test2":""}}`
 		}
-        log.Printf("worker return: %v\n", payload)
+		log.Printf("worker return: %v\n", payload)
 		cmd, err := client.NewCompleteJobCommand().JobKey(job.GetKey()).VariablesFromString(payload)
 		if err != nil {
 			log.Fatalln(err)
@@ -93,10 +93,10 @@ func main() {
 	prop.Open()
 
 	go func() {
-        log.Println("running abc")
+		log.Println("running abc")
 		startProcess("abc")
-        log.Println("running 123")
+		log.Println("running 123")
 		startProcess("123")
 	}()
-    <-exiter
+	<-exiter
 }
